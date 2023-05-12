@@ -36,12 +36,15 @@ func main() {
 	degree := []byte{0b00110, 0b01001, 0b01001, 0b00110, 0b00000, 0b00000, 0b00000, 0b00000}
 	lcd.CreateCharacter(0, degree)
 
+	maxCol := int16(127)
+	maxRow := int16(31)
+
 	display := ssd1306.NewI2C(machine.I2C0)
 
 	display.Configure(ssd1306.Config{
-		Address: 0x3C,
-		Width:   128,
-		Height:  64,
+		Address: ssd1306.Address_128_32,
+		Width:   maxCol + 1,
+		Height:  maxRow + 1,
 	})
 
 	display.ClearDisplay()
@@ -67,11 +70,11 @@ func main() {
 	}
 
 	var sec int = -1
-
-	x := int16(0)
-	y := int16(0)
-	deltaX := int16(1)
-	deltaY := int16(1)
+	var x int16 = 0
+	var y int16 = 0
+	var deltaX int16 = 1
+	var deltaY int16 = 1
+	var c color.RGBA
 
 	for {
 		lcd.Home()
@@ -104,10 +107,11 @@ func main() {
 		}
 
 		pixel := display.GetPixel(x, y)
-		c := color.RGBA{255, 255, 255, 255}
 
 		if pixel {
 			c = color.RGBA{0, 0, 0, 255}
+		} else {
+			c = color.RGBA{255, 255, 255, 255}
 		}
 
 		display.SetPixel(x, y, c)
@@ -116,11 +120,11 @@ func main() {
 		x += deltaX
 		y += deltaY
 
-		if x == 0 || x == 127 {
+		if x <= 0 || x >= maxCol {
 			deltaX = -deltaX
 		}
 
-		if y == 0 || y == 63 {
+		if y <= 0 || y >= maxRow {
 			deltaY = -deltaY
 		}
 
